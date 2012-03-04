@@ -18,12 +18,27 @@ describe "User pages" do
       before(:all) { 30.times { FactoryGirl.create(:user) } }
       after(:all)  { User.delete_all }
 
+      let(:first_page)  { User.paginate(page: 1) }
+      let(:second_page) { User.paginate(page: 2) }
+
       it { should have_link('Next') }
       it { should have_link('2') }
 
       it "should list each user" do
         User.all[0..2].each do |user|
           page.should have_selector('li', text: user.name)
+        end
+      end
+
+      it "should list the first page of users" do
+        first_page.each do |user|
+          page.should have_selector('li', text: user.name)
+        end
+      end
+
+      it "should not list the second page of users" do
+        second_page.each do |user|
+          page.should_not have_selector('li', text: user.name)
         end
       end
 
@@ -111,9 +126,9 @@ describe "User pages" do
       before { click_button "Update" }
 
       it { should have_content(error) }
-   end
+    end
 
-   describe "with valid information" do
+    describe "with valid information" do
       let(:user)      { FactoryGirl.create(:user) }
       let(:new_name)  { "New Name" }
       let(:new_email) { "new@example.com" }

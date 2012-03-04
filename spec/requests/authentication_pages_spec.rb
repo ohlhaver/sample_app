@@ -19,6 +19,8 @@ describe "Authentication" do
 
 	      it { should have_selector('title', text: 'Sign in') }
 	      it { should have_selector('div.flash.error', text: 'Invalid') }
+	      it { should_not have_link('Profile') }
+	      it { should_not have_link('Settings') }
 
 	      describe "after visiting another page" do
 	        before { click_link "Home" }
@@ -48,6 +50,17 @@ describe "Authentication" do
         		it { should have_link('Sign in') }
       		end
 
+      		describe "attempting to signup as logged in user" do
+      			before { visit signup_path }
+      			it { should have_selector('title', text: 'Home') }
+      		end
+
+      		describe "attempting to create new user as logged in user" do
+      			#let(:user) { FactoryGirl.create(:user) }
+      			before {visit create_path}
+      			it { should have_selector('title', text: 'Home') }
+      		#	specify { response.should redirect_to(root_path) }
+      		end
       
     	end
 
@@ -71,6 +84,19 @@ describe "Authentication" do
 		          it "should render the desired protected page" do
 		            page.should have_selector('title', text: 'Edit user')
 		          end
+
+		          	describe "when signing in again" do
+	            		before do
+	              			visit signin_path
+	              			fill_in "Email",    with: user.email
+	             			fill_in "Password", with: user.password
+	              			click_button "Sign in"
+	            		end
+
+	            		it "should render the default (profile) page" do
+	              			page.should have_selector('title', text: user.name) 
+	            		end
+          			end
 		        end
       		end
 
@@ -121,6 +147,26 @@ describe "Authentication" do
 		        specify { response.should redirect_to(root_path) }        
 	     	end
     	end
+
+    	describe "as admin user" do
+	      	let(:admin) { FactoryGirl.create(:admin) }
+	      	let(:user) { FactoryGirl.create(:user) }
+	      	let(:non_admin) { FactoryGirl.create(:user) }
+	        before do
+	          sign_in admin
+	        end
+
+		    describe "submitting a DELETE myself request to the Users#destroy action" do
+		        before { delete user_path(admin) }
+		        specify { response.should redirect_to(root_path) }        
+	     	end
+
+	     	describe "submitting a regular DELETE request to the Users#destroy action" do
+		        before { delete user_path(user) }
+		        specify { response.should redirect_to(user_path) }        
+	     	end
+    	end
+
   	end
 
 end

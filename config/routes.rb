@@ -4,6 +4,7 @@ SampleApp::Application.routes.draw do
 
 
   get "static_pages/home"
+  match '/create',  to: 'users#create'
   match '/signup',  to: 'users#new'
   match '/signin',  to: 'sessions#new'
   match '/signout', to: 'sessions#destroy', via: :delete
